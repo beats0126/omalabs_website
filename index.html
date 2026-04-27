@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Li Hang Ping — OMA Labs</title>
+  <meta name="description" content="Tech Lead, Full-Stack Developer, and IoT Architect. Building scalable software and integrated hardware solutions." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav" id="nav">
+    <div class="nav__inner">
+      <a href="#hero" class="nav__logo">
+        <img src="assets/logo.png" alt="OMA Labs" class="nav__logo-img" />
+        <span class="nav__logo-text">OMA Labs</span>
+      </a>
+      <ul class="nav__links">
+        <li><a href="#about">About</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#stack">Stack</a></li>
+        <li><a href="#contact" class="nav__cta">Get in Touch</a></li>
+      </ul>
+      <button class="nav__hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="hero__bg"></div>
+    <div class="hero__overlay"></div>
+    <div class="hero__content">
+      <p class="hero__eyebrow">Welcome to OMA Labs</p>
+      <h1 class="hero__headline">Engineering the<br /><span class="gradient-text">Future of Software</span><br />&amp; Hardware.</h1>
+      <p class="hero__sub">Tech Lead · Full-Stack Developer · IoT Architect<br />I transform complex ideas into scalable digital products and integrated physical solutions.</p>
+      <div class="hero__actions">
+        <a href="#contact" class="btn btn--primary">Let's Talk</a>
+        <a href="#services" class="btn btn--ghost">Explore Services</a>
+      </div>
+    </div>
+    <div class="hero__scroll-indicator">
+      <span>Scroll</span>
+      <div class="hero__scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="section about" id="about">
+    <div class="container">
+      <div class="section__label">My Journey</div>
+      <h2 class="section__title">The Path to <span class="gradient-text">Mastery</span></h2>
+      <div class="about__grid">
+        <div class="about__text">
+          <p>With a background in <strong>Game Development (B.Sc. Hons)</strong>, my journey began with a fascination for how systems interact. Over the last <strong>7+ years</strong>, that curiosity evolved into a career leading multidisciplinary teams.</p>
+          <p>I've spent my time in the trenches of code — refactoring legacy systems into modern <strong>Laravel architectures</strong> and building fluid mobile experiences with <strong>Flutter</strong>. But I didn't stop at the screen.</p>
+          <p>My passion for <strong>Hardware Engineering</strong> allows me to bridge the gap between the digital and physical worlds, from PCB design to IoT implementation. Today, I lead as a <strong>Tech Lead</strong>, mentoring the next generation of developers while staying hands-on with the latest in <strong>AI automation and LLM integration</strong>.</p>
+        </div>
+        <div class="about__stats">
+          <div class="stat-card">
+            <div class="stat-card__num">7<span>+</span></div>
+            <div class="stat-card__label">Years Experience</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__num">3</div>
+            <div class="stat-card__label">Core Disciplines</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__num">∞</div>
+            <div class="stat-card__label">Problems Solved</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card__num">1</div>
+            <div class="stat-card__label">BSc Hons Degree</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section class="section services" id="services">
+    <div class="container">
+      <div class="section__label">What I Do</div>
+      <h2 class="section__title">How I Can Help<br /><span class="gradient-text">Your Business</span></h2>
+      <div class="services__grid">
+
+        <div class="service-card">
+          <div class="service-card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          </div>
+          <h3>Full-Stack Development</h3>
+          <p>Building robust, scalable web and mobile applications using <strong>Laravel</strong> and <strong>Flutter</strong>.</p>
+          <ul class="service-card__tags">
+            <li>Laravel</li><li>Flutter</li><li>PHP</li><li>MySQL</li>
+          </ul>
+        </div>
+
+        <div class="service-card">
+          <div class="service-card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+          </div>
+          <h3>IoT &amp; Hardware Design</h3>
+          <p>End-to-end hardware solutions: <strong>PCB design</strong>, Arduino/ESP32/Raspberry Pi integration, and Wiegand protocols.</p>
+          <ul class="service-card__tags">
+            <li>Arduino</li><li>ESP32</li><li>Raspberry Pi</li><li>PCB</li>
+          </ul>
+        </div>
+
+        <div class="service-card">
+          <div class="service-card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+          </div>
+          <h3>System Architecture</h3>
+          <p>Remaking legacy systems for high-performance scalability and modernising backend cores.</p>
+          <ul class="service-card__tags">
+            <li>Microservices</li><li>API Design</li><li>Scalability</li>
+          </ul>
+        </div>
+
+        <div class="service-card">
+          <div class="service-card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 8v4l3 3"/><path d="M18 2v6h6"/></svg>
+          </div>
+          <h3>AI &amp; Automation</h3>
+          <p>Implementing <strong>Autonomous AI Agents</strong> for sales, lead management, and workflow optimisation.</p>
+          <ul class="service-card__tags">
+            <li>LLM Integration</li><li>AI Agents</li><li>Automation</li>
+          </ul>
+        </div>
+
+        <div class="service-card">
+          <div class="service-card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <h3>Technical Consultancy</h3>
+          <p>Strategic guidance for startups and enterprises on tech stacks, hiring, and product roadmaps.</p>
+          <ul class="service-card__tags">
+            <li>Tech Strategy</li><li>Team Building</li><li>Roadmapping</li>
+          </ul>
+        </div>
+
+        <div class="service-card service-card--highlight">
+          <div class="service-card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>
+          </div>
+          <h3>End-to-End Ownership</h3>
+          <p>From concept to deployment, I handle the full lifecycle — software, hardware, and everything in between.</p>
+          <ul class="service-card__tags">
+            <li>Prototyping</li><li>Deployment</li><li>Maintenance</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- TECH STACK -->
+  <section class="section stack" id="stack">
+    <div class="container">
+      <div class="section__label">Tools &amp; Technologies</div>
+      <h2 class="section__title">My <span class="gradient-text">Tech Stack</span></h2>
+      <div class="stack__groups">
+
+        <div class="stack__group">
+          <div class="stack__group-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            Software
+          </div>
+          <div class="stack__pills">
+            <span class="pill">Flutter</span>
+            <span class="pill">Dart</span>
+            <span class="pill">Laravel</span>
+            <span class="pill">PHP</span>
+            <span class="pill">MySQL</span>
+            <span class="pill">JavaScript</span>
+          </div>
+        </div>
+
+        <div class="stack__group">
+          <div class="stack__group-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            Hardware
+          </div>
+          <div class="stack__pills">
+            <span class="pill">PCB Design</span>
+            <span class="pill">Arduino</span>
+            <span class="pill">ESP32</span>
+            <span class="pill">Raspberry Pi</span>
+            <span class="pill">IoT Integration</span>
+            <span class="pill">Wiegand Protocol</span>
+          </div>
+        </div>
+
+        <div class="stack__group">
+          <div class="stack__group-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+            AI &amp; Infra
+          </div>
+          <div class="stack__pills">
+            <span class="pill">LLM Hosting</span>
+            <span class="pill">Prompt Engineering</span>
+            <span class="pill">Nvidia RTX</span>
+            <span class="pill">AI Agents</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT CTA -->
+  <section class="section contact" id="contact">
+    <div class="contact__bg"></div>
+    <div class="container contact__inner">
+      <div class="section__label">Let's Collaborate</div>
+      <h2 class="section__title">Ready to build something<br /><span class="gradient-text">exceptional?</span></h2>
+      <p class="contact__body">Whether you need a sophisticated mobile app, a custom hardware solution, or a complete system overhaul, I bring the technical leadership to make it happen.</p>
+      <div class="contact__actions">
+        <a href="mailto:hello@omalabs.cc" class="btn btn--primary btn--lg">Get in Touch</a>
+        <a href="https://omalabs.cc" target="_blank" rel="noopener noreferrer" class="btn btn--ghost btn--lg">Visit OMA Labs</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <div class="footer__brand">
+        <img src="assets/logo.png" alt="OMA Labs" class="footer__logo" />
+        <div>
+          <div class="footer__name">Li Hang Ping</div>
+          <div class="footer__tagline">Tech Lead &amp; IoT Architect · OMA Labs</div>
+        </div>
+      </div>
+      <div class="footer__links">
+        <a href="#about">About</a>
+        <a href="#services">Services</a>
+        <a href="#stack">Stack</a>
+        <a href="https://omalabs.cc" target="_blank" rel="noopener noreferrer">omalabs.cc</a>
+      </div>
+      <div class="footer__copy">&copy; 2026 OMA Labs. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
