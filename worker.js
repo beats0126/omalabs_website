@@ -69,7 +69,11 @@ export default {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       } catch (err) {
-        return new Response(JSON.stringify({ error: err.message }), {
+        return new Response(JSON.stringify({ 
+            error: err.message, 
+            stack: err.stack,
+            context: 'worker_exception'
+        }), {
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
