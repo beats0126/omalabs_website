@@ -10,9 +10,25 @@
 
 export default {
   async fetch(request, env) {
+    const origin = request.headers.get('Origin');
+    const allowedOrigins = [
+      'https://profile.omalabs.cc',
+      'https://beats0126.github.io'
+    ];
+    
+    // Default fallback
+    let corsOrigin = 'https://profile.omalabs.cc'; 
+    
+    // Allow if it's a known production domain OR local testing
+    if (origin) {
+      if (allowedOrigins.includes(origin) || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
+        corsOrigin = origin;
+      }
+    }
+
     // CORS headers for the admin page
     const corsHeaders = {
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': corsOrigin,
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
     };
