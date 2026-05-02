@@ -1,5 +1,31 @@
 /* OMA Labs — Portfolio Scripts */
 
+// ── Load dynamic config ─────────────────────────────────────
+(async function loadConfig() {
+  try {
+    const res = await fetch('config.json');
+    if (!res.ok) return;
+    const cfg = await res.json();
+
+    const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.textContent = val; };
+    set('dyn-heading1',     cfg.contactHeading1);
+    set('dyn-heading2',     cfg.contactHeading2);
+    set('dyn-body',         cfg.contactBody);
+
+    const ctaPrimary = document.getElementById('dyn-cta-primary');
+    if (ctaPrimary && cfg.email) {
+      ctaPrimary.href = `mailto:${cfg.email}`;
+      if (cfg.primaryCta) ctaPrimary.textContent = cfg.primaryCta;
+    }
+
+    const ctaSecondary = document.getElementById('dyn-cta-secondary');
+    if (ctaSecondary) {
+      if (cfg.secondaryUrl) ctaSecondary.href = cfg.secondaryUrl;
+      if (cfg.secondaryCta) ctaSecondary.textContent = cfg.secondaryCta;
+    }
+  } catch { /* static fallback — content stays as in HTML */ }
+})();
+
 // Nav scroll effect
 const nav = document.getElementById('nav');
 window.addEventListener('scroll', () => {
