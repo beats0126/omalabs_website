@@ -148,7 +148,7 @@ async function handleOAuthCallback(code) {
   const data = await workerRes.json();
 
   if (!workerRes.ok || data.error) {
-    throw new Error(data.error_description || data.error || 'Token exchange failed');
+    throw new Error(JSON.stringify(data));
   }
 
   if (!data.access_token) {
