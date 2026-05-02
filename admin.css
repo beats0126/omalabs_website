@@ -306,6 +306,49 @@ h1 {
   cursor: pointer;
 }
 
+/* ---------- OAuth hint ---------- */
+.admin__oauth-hint {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--clr-muted);
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+
+/* ---------- Divider ---------- */
+.admin__divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 24px 0;
+  color: var(--clr-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.admin__divider::before,
+.admin__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--clr-border);
+}
+
+/* ---------- PAT details (collapsible) ---------- */
+.admin__pat-details summary {
+  font-size: 0.82rem;
+  color: var(--clr-muted);
+  cursor: pointer;
+  padding: 4px 0;
+  transition: color var(--transition);
+}
+.admin__pat-details summary:hover { color: var(--clr-cyan); }
+
+.admin__pat-body {
+  margin-top: 16px;
+}
+
 /* ---------- Responsive ---------- */
 @media (max-width: 480px) {
   .admin__card { padding: 28px 20px; }

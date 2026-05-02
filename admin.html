@@ -22,31 +22,41 @@
       </div>
       <h1>Sign In</h1>
       <p class="admin__desc">
-        Authenticate with a <strong>GitHub Personal Access Token</strong>.
         Only <strong>repository collaborators</strong> are granted access.
       </p>
 
-      <div class="admin__token-info">
-        <p>Generate a <strong>classic</strong> token with <code>repo</code> scope:</p>
-        <a href="https://github.com/settings/tokens/new?scopes=repo&description=OMA+Labs+Admin+Panel" target="_blank" rel="noopener noreferrer" class="admin__link">
-          github.com/settings/tokens/new →
-        </a>
-      </div>
+      <!-- OAuth (primary) -->
+      <button id="loginBtn" class="admin__btn admin__btn--primary">🔑 Sign in with GitHub</button>
+      <p class="admin__oauth-hint">You'll be redirected to GitHub to authorize, then sent back here.</p>
 
-      <div class="admin__field">
-        <label for="tokenInput">Personal Access Token</label>
-        <div class="admin__input-row">
-          <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
-          <button id="toggleToken" class="admin__toggle-vis" type="button" aria-label="Toggle token visibility">👁</button>
+      <div class="admin__divider"><span>or use a token</span></div>
+
+      <!-- PAT fallback -->
+      <details class="admin__pat-details">
+        <summary>Sign in with a Personal Access Token</summary>
+        <div class="admin__pat-body">
+          <div class="admin__token-info">
+            <p>Generate a <strong>classic</strong> token with <code>repo</code> scope:</p>
+            <a href="https://github.com/settings/tokens/new?scopes=repo&description=OMA+Labs+Admin+Panel" target="_blank" rel="noopener noreferrer" class="admin__link">
+              github.com/settings/tokens/new →
+            </a>
+          </div>
+
+          <div class="admin__field">
+            <label for="tokenInput">Personal Access Token</label>
+            <div class="admin__input-row">
+              <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
+              <button id="toggleToken" class="admin__toggle-vis" type="button" aria-label="Toggle token visibility">👁</button>
+            </div>
+          </div>
+
+          <label class="admin__checkbox-label">
+            <input type="checkbox" id="rememberCheck" />
+            <span>Remember this browser (7 days)</span>
+          </label>
         </div>
-      </div>
+      </details>
 
-      <label class="admin__checkbox-label">
-        <input type="checkbox" id="rememberCheck" />
-        <span>Remember this browser (stores token in localStorage)</span>
-      </label>
-
-      <button id="loginBtn" class="admin__btn admin__btn--primary">Sign In</button>
       <div id="loginError" class="admin__error"></div>
       <div id="loginSpinner" class="admin__spinner" hidden></div>
     </div>

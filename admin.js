@@ -1,5 +1,6 @@
 /* OMA Labs — Admin Panel Logic
-   Auth via GitHub Personal Access Token
+   Auth: GitHub OAuth (redirect) via Cloudflare Worker proxy
+   Fallback: Personal Access Token
    Verifies repo collaborator status, then allows
    editing config.json with commits via GitHub API.
    ============================================================ */
@@ -9,27 +10,41 @@ const REPO_OWNER = 'beats0126';
 const REPO_NAME  = 'omalabs_website';
 const CONFIG_PATH = 'config.json';
 const API_BASE    = 'https://api.github.com';
-const STORAGE_KEY  = 'omalabs_admin';
+
+/* ═══════════════════════════════════════════════════════════
+   Replace these with your OAuth App details
+   Create one at: https://github.com/settings/developers
+   - Application name: OMA Labs Admin
+   - Homepage URL: https://profile.omalabs.cc
+   - Callback URL:  https://profile.omalabs.cc/admin.html
+   ═══════════════════════════════════════════════════════════ */
+const OAUTH_CLIENT_ID = 'Ov23li9mwupQD7qHXXWa';
+const WORKER_URL = 'https://omalabs-auth.omalabs.workers.dev';
+/* ═══════════════════════════════════════════════════════════
+   Deploy worker.js to Cloudflare Workers, then update WORKER_URL
+   ═══════════════════════════════════════════════════════════ */
+
+const STORAGE_KEY = 'omalabs_admin';
 
 // ── DOM refs ────────────────────────────────────────────────
-const loginScreen  = document.getElementById('loginScreen');
-const editorScreen = document.getElementById('editorScreen');
-const loginBtn     = document.getElementById('loginBtn');
-const loginError   = document.getElementById('loginError');
-const loginSpinner = document.getElementById('loginSpinner');
-const tokenInput   = document.getElementById('tokenInput');
-const toggleToken  = document.getElementById('toggleToken');
+const loginScreen   = document.getElementById('loginScreen');
+const editorScreen  = document.getElementById('editorScreen');
+const loginBtn      = document.getElementById('loginBtn');
+const loginError    = document.getElementById('loginError');
+const loginSpinner  = document.getElementById('loginSpinner');
+const tokenInput    = document.getElementById('tokenInput');
+const toggleToken   = document.getElementById('toggleToken');
 const rememberCheck = document.getElementById('rememberCheck');
 
 // Editor
-const logoutBtn    = document.getElementById('logoutBtn');
-const userName     = document.getElementById('userName');
-const editorForm   = document.getElementById('editorForm');
-const saveBtn      = document.getElementById('saveBtn');
-const resetBtn     = document.getElementById('resetBtn');
-const saveError    = document.getElementById('saveError');
-const saveSuccess  = document.getElementById('saveSuccess');
-const saveSpinner  = document.getElementById('saveSpinner');
+const logoutBtn   = document.getElementById('logoutBtn');
+const userName    = document.getElementById('userName');
+const editorForm  = document.getElementById('editorForm');
+const saveBtn     = document.getElementById('saveBtn');
+const resetBtn    = document.getElementById('resetBtn');
+const saveError   = document.getElementById('saveError');
+const saveSuccess = document.getElementById('saveSuccess');
+const saveSpinner = document.getElementById('saveSpinner');
 
 // ── State ───────────────────────────────────────────────────
 let currentToken   = null;
@@ -40,21 +55,19 @@ let originalConfig = null;
 // ── Storage helpers ─────────────────────────────────────────
 function saveToken(token, user) {
   const data = JSON.stringify({ token, user, ts: Date.now() });
-  if (rememberCheck.checked) {
+  if (rememberCheck && rememberCheck.checked) {
     localStorage.setItem(STORAGE_KEY, data);
   }
   sessionStorage.setItem(STORAGE_KEY, data);
 }
 
 function loadSavedToken() {
-  // Try session first, then localStorage
   const raw = sessionStorage.getItem(STORAGE_KEY) || localStorage.getItem(STORAGE_KEY);
   if (!raw) return null;
   try {
     const data = JSON.parse(raw);
-    if (Date.now() - data.ts > 30 * 24 * 60 * 60 * 1000) { // 30-day expiry for localStorage
-      localStorage.removeItem(STORAGE_KEY);
-      sessionStorage.removeItem(STORAGE_KEY);
+    if (Date.now() - data.ts > 7 * 24 * 60 * 60 * 1000) {
+      clearSavedToken();
       return null;
     }
     return data;
@@ -67,8 +80,8 @@ function clearSavedToken() {
 }
 
 // ── Helpers ─────────────────────────────────────────────────
-function show(spinner) { spinner.hidden = false; }
-function hide(spinner) { spinner.hidden = true; }
+function show(s) { s.hidden = false; }
+function hide(s) { s.hidden = true; }
 
 async function apiCall(url, token, opts = {}) {
   const res = await fetch(url, {
@@ -99,7 +112,7 @@ async function verifyTokenAndCollaborator(token) {
   } catch (e) {
     if (e.status === 404) {
       throw new Error(
-        `User "${user.login}" is not a collaborator on ${REPO_OWNER}/${REPO_NAME}. Access denied.`
+        `User "${user.login}" is not a collaborator on ${REPO_OWNER}/${REPO_NAME}.`
       );
     }
     throw e;
@@ -107,17 +120,87 @@ async function verifyTokenAndCollaborator(token) {
   return user;
 }
 
-// ── Login ───────────────────────────────────────────────────
-loginBtn.addEventListener('click', async () => {
-  const token = tokenInput.value.trim();
-  if (!token) {
-    loginError.textContent = 'Please enter a personal access token.';
+// ═══════════════════════════════════════════════════════════
+//  OAUTH REDIRECT FLOW (primary)
+// ═══════════════════════════════════════════════════════════
+
+function startOAuth() {
+  const params = new URLSearchParams({
+    client_id: OAUTH_CLIENT_ID,
+    redirect_uri: window.location.origin + '/admin.html',
+    scope: 'repo',
+  });
+  window.location.href = `https://github.com/login/oauth/authorize?${params}`;
+}
+
+async function handleOAuthCallback(code) {
+  loginError.textContent = '';
+  show(loginSpinner);
+  loginBtn.textContent = '⏳ Exchanging code…';
+
+  // Exchange code for token via Cloudflare Worker
+  const workerRes = await fetch(`${WORKER_URL}/token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code }),
+  });
+
+  const data = await workerRes.json();
+
+  if (!workerRes.ok || data.error) {
+    throw new Error(data.error_description || data.error || 'Token exchange failed');
+  }
+
+  if (!data.access_token) {
+    throw new Error('No access token returned. Check worker logs.');
+  }
+
+  // Verify token & collaborator status
+  const user = await verifyTokenAndCollaborator(data.access_token);
+  currentToken = data.access_token;
+  currentUser  = user.login;
+  saveToken(data.access_token, user.login);
+
+  // Clean URL
+  window.history.replaceState({}, '', '/admin.html');
+
+  await loadEditor();
+}
+
+// Sign in button → redirect to GitHub
+loginBtn.addEventListener('click', () => {
+  if (WORKER_URL.includes('REPLACE_USERNAME')) {
+    // Worker not configured — fall back to PAT
+    loginError.textContent = 'OAuth not configured yet. Enter a PAT below, or deploy the worker.';
     return;
   }
-  loginError.textContent = '';
-  loginBtn.disabled = true;
-  show(loginSpinner);
+  startOAuth();
+});
 
+// ═══════════════════════════════════════════════════════════
+//  PAT FALLBACK
+// ═══════════════════════════════════════════════════════════
+
+toggleToken.addEventListener('click', () => {
+  const isPw = tokenInput.type === 'password';
+  tokenInput.type = isPw ? 'text' : 'password';
+  toggleToken.textContent = isPw ? '🙈' : '👁';
+});
+
+// The PAT input works by pressing Enter or clicking a small inline button
+// (handled via the login form's secondary mode)
+tokenInput.addEventListener('keydown', async (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    await patLogin();
+  }
+});
+
+async function patLogin() {
+  const token = tokenInput.value.trim();
+  if (!token) return;
+  loginError.textContent = '';
+  show(loginSpinner);
   try {
     const user = await verifyTokenAndCollaborator(token);
     currentToken = token;
@@ -127,23 +210,20 @@ loginBtn.addEventListener('click', async () => {
   } catch (e) {
     loginError.textContent = e.message;
   } finally {
-    loginBtn.disabled = false;
     hide(loginSpinner);
   }
-});
+}
 
-// ── Toggle visibility ───────────────────────────────────────
-toggleToken.addEventListener('click', () => {
-  const isPw = tokenInput.type === 'password';
-  tokenInput.type = isPw ? 'text' : 'password';
-  toggleToken.textContent = isPw ? '🙈' : '👁';
-});
+// ═══════════════════════════════════════════════════════════
+//  EDITOR
+// ═══════════════════════════════════════════════════════════
 
-// ── Load editor ─────────────────────────────────────────────
 async function loadEditor() {
   loginScreen.hidden = true;
   editorScreen.hidden = false;
   userName.textContent = `👤 ${currentUser}`;
+  hide(loginSpinner);
+  loginBtn.textContent = 'Sign In with GitHub';
 
   try {
     const file = await apiCall(
@@ -239,19 +319,42 @@ logoutBtn.addEventListener('click', () => {
   loginError.textContent = '';
 });
 
-// ── Auto-restore session ────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════
+
 (async function init() {
+  // 1) Check for OAuth callback (code in URL)
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+
+  if (code) {
+    try {
+      await handleOAuthCallback(code);
+      return;
+    } catch (e) {
+      loginError.textContent = 'OAuth failed: ' + e.message;
+      hide(loginSpinner);
+      loginBtn.textContent = 'Sign In with GitHub';
+      window.history.replaceState({}, '', '/admin.html');
+    }
+  }
+
+  // 2) Try restoring saved session
   const saved = loadSavedToken();
   if (saved && saved.token && saved.user) {
     try {
       await apiCall(`${API_BASE}/user`, saved.token);
       currentToken = saved.token;
       currentUser  = saved.user;
-      // Refresh storage timestamps
-      saveToken(saved.token, saved.user);
+      saveToken(saved.token, saved.user); // refresh timestamp
       await loadEditor();
+      return;
     } catch {
       clearSavedToken();
     }
   }
+
+  // 3) Show login screen
+  loginScreen.hidden = false;
 })();
