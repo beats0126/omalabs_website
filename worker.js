@@ -12,7 +12,7 @@ export default {
   async fetch(request, env) {
     // CORS headers for the admin page
     const corsHeaders = {
-      'Access-Control-Allow-Origin': 'https://profile.omalabs.cc',
+      'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
     };

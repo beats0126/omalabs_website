@@ -127,7 +127,7 @@ async function verifyTokenAndCollaborator(token) {
 function startOAuth() {
   const params = new URLSearchParams({
     client_id: OAUTH_CLIENT_ID,
-    redirect_uri: window.location.origin + '/admin.html',
+    redirect_uri: window.location.origin + window.location.pathname,
     scope: 'repo',
   });
   window.location.href = `https://github.com/login/oauth/authorize?${params}`;
@@ -162,7 +162,7 @@ async function handleOAuthCallback(code) {
   saveToken(data.access_token, user.login);
 
   // Clean URL
-  window.history.replaceState({}, '', '/admin.html');
+  window.history.replaceState({}, '', window.location.pathname);
 
   await loadEditor();
 }
@@ -336,7 +336,7 @@ logoutBtn.addEventListener('click', () => {
       loginError.textContent = 'OAuth failed: ' + e.message;
       hide(loginSpinner);
       loginBtn.textContent = 'Sign In with GitHub';
-      window.history.replaceState({}, '', '/admin.html');
+      window.history.replaceState({}, '', window.location.pathname);
     }
   }
 
