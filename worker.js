@@ -16,14 +16,10 @@ export default {
       'https://beats0126.github.io'
     ];
     
-    // Default fallback
+    // Only allow known production origins
     let corsOrigin = 'https://profile.omalabs.cc'; 
-    
-    // Allow if it's a known production domain OR local testing
-    if (origin) {
-      if (allowedOrigins.includes(origin) || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
-        corsOrigin = origin;
-      }
+    if (origin && allowedOrigins.includes(origin)) {
+      corsOrigin = origin;
     }
 
     // CORS headers for the admin page
@@ -69,11 +65,7 @@ export default {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       } catch (err) {
-        return new Response(JSON.stringify({ 
-            error: err.message, 
-            stack: err.stack,
-            context: 'worker_exception'
-        }), {
+        return new Response(JSON.stringify({ error: 'Internal server error' }), {
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });

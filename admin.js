@@ -128,15 +128,27 @@ async function verifyTokenAndCollaborator(token) {
 // ═══════════════════════════════════════════════════════════
 
 function startOAuth() {
+  // Generate a random state token to prevent CSRF attacks
+  const state = crypto.randomUUID();
+  sessionStorage.setItem('oauth_state', state);
+
   const params = new URLSearchParams({
     client_id: OAUTH_CLIENT_ID,
     redirect_uri: window.location.origin + window.location.pathname,
-    scope: 'repo',
+    scope: 'public_repo',
+    state,
   });
   window.location.href = `https://github.com/login/oauth/authorize?${params}`;
 }
 
-async function handleOAuthCallback(code) {
+async function handleOAuthCallback(code, state) {
+  // Verify the state parameter matches what we sent (CSRF protection)
+  const savedState = sessionStorage.getItem('oauth_state');
+  sessionStorage.removeItem('oauth_state');
+  if (!savedState || savedState !== state) {
+    throw new Error('Invalid OAuth state. Possible CSRF attack. Please try again.');
+  }
+
   loginError.textContent = '';
   show(loginSpinner);
   loginBtn.textContent = '⏳ Exchanging code…';
@@ -151,7 +163,7 @@ async function handleOAuthCallback(code) {
   const data = await workerRes.json();
 
   if (!workerRes.ok || data.error) {
-    throw new Error(JSON.stringify(data));
+    throw new Error(data.error_description || data.error || 'Token exchange failed');
   }
 
   if (!data.access_token) {
@@ -330,10 +342,11 @@ logoutBtn.addEventListener('click', () => {
   // 1) Check for OAuth callback (code in URL)
   const params = new URLSearchParams(window.location.search);
   const code = params.get('code');
+  const state = params.get('state');
 
   if (code) {
     try {
-      await handleOAuthCallback(code);
+      await handleOAuthCallback(code, state);
       return;
     } catch (e) {
       loginError.textContent = 'OAuth failed: ' + e.message;
