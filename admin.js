@@ -1,5 +1,5 @@
 /* OMA Labs — Admin Panel Logic
-   Auth: GitHub Device Flow (primary) or PAT (fallback)
+   Auth via GitHub Personal Access Token
    Verifies repo collaborator status, then allows
    editing config.json with commits via GitHub API.
    ============================================================ */
@@ -9,56 +9,66 @@ const REPO_OWNER = 'beats0126';
 const REPO_NAME  = 'omalabs_website';
 const CONFIG_PATH = 'config.json';
 const API_BASE    = 'https://api.github.com';
-
-/* ═══════════════════════════════════════════════════════════
-   IMPORTANT: Replace this with your OAuth App's Client ID
-   Create one at: https://github.com/settings/developers
-   - Application name: OMA Labs Admin
-   - Homepage URL: https://profile.omalabs.cc
-   - Callback URL:  https://profile.omalabs.cc/admin.html
-   ═══════════════════════════════════════════════════════════ */
-const OAUTH_CLIENT_ID = 'Ov23li9mwupQD7qHXXWa';
+const STORAGE_KEY  = 'omalabs_admin';
 
 // ── DOM refs ────────────────────────────────────────────────
-const loginScreen     = document.getElementById('loginScreen');
-const editorScreen    = document.getElementById('editorScreen');
-
-// Device flow
-const deviceFlowBtn   = document.getElementById('deviceFlowBtn');
-const deviceFlowUI    = document.getElementById('deviceFlowUI');
-const deviceCode      = document.getElementById('deviceCode');
-const deviceFlowError = document.getElementById('deviceFlowError');
-const deviceSpinner   = document.getElementById('deviceFlowSpinner');
-
-// PAT fallback
-const tokenInput      = document.getElementById('tokenInput');
-const toggleToken     = document.getElementById('toggleToken');
-const patLoginBtn     = document.getElementById('patLoginBtn');
-const patLoginError   = document.getElementById('patLoginError');
-const patLoginSpinner = document.getElementById('patLoginSpinner');
-
-// General
-const loginError      = document.getElementById('loginError');
+const loginScreen  = document.getElementById('loginScreen');
+const editorScreen = document.getElementById('editorScreen');
+const loginBtn     = document.getElementById('loginBtn');
+const loginError   = document.getElementById('loginError');
+const loginSpinner = document.getElementById('loginSpinner');
+const tokenInput   = document.getElementById('tokenInput');
+const toggleToken  = document.getElementById('toggleToken');
+const rememberCheck = document.getElementById('rememberCheck');
 
 // Editor
-const logoutBtn       = document.getElementById('logoutBtn');
-const userName        = document.getElementById('userName');
-const editorForm      = document.getElementById('editorForm');
-const saveBtn         = document.getElementById('saveBtn');
-const resetBtn        = document.getElementById('resetBtn');
-const saveError       = document.getElementById('saveError');
-const saveSuccess     = document.getElementById('saveSuccess');
-const saveSpinner     = document.getElementById('saveSpinner');
+const logoutBtn    = document.getElementById('logoutBtn');
+const userName     = document.getElementById('userName');
+const editorForm   = document.getElementById('editorForm');
+const saveBtn      = document.getElementById('saveBtn');
+const resetBtn     = document.getElementById('resetBtn');
+const saveError    = document.getElementById('saveError');
+const saveSuccess  = document.getElementById('saveSuccess');
+const saveSpinner  = document.getElementById('saveSpinner');
 
 // ── State ───────────────────────────────────────────────────
-let currentToken    = null;
-let currentUser     = null;
-let currentSha      = null;
-let originalConfig  = null;
-let devicePollTimer = null;
+let currentToken   = null;
+let currentUser    = null;
+let currentSha     = null;
+let originalConfig = null;
+
+// ── Storage helpers ─────────────────────────────────────────
+function saveToken(token, user) {
+  const data = JSON.stringify({ token, user, ts: Date.now() });
+  if (rememberCheck.checked) {
+    localStorage.setItem(STORAGE_KEY, data);
+  }
+  sessionStorage.setItem(STORAGE_KEY, data);
+}
+
+function loadSavedToken() {
+  // Try session first, then localStorage
+  const raw = sessionStorage.getItem(STORAGE_KEY) || localStorage.getItem(STORAGE_KEY);
+  if (!raw) return null;
+  try {
+    const data = JSON.parse(raw);
+    if (Date.now() - data.ts > 30 * 24 * 60 * 60 * 1000) { // 30-day expiry for localStorage
+      localStorage.removeItem(STORAGE_KEY);
+      sessionStorage.removeItem(STORAGE_KEY);
+      return null;
+    }
+    return data;
+  } catch { return null; }
+}
+
+function clearSavedToken() {
+  localStorage.removeItem(STORAGE_KEY);
+  sessionStorage.removeItem(STORAGE_KEY);
+}
 
 // ── Helpers ─────────────────────────────────────────────────
-function s(show, spinner) { spinner.hidden = !show; }
+function show(spinner) { spinner.hidden = false; }
+function hide(spinner) { spinner.hidden = true; }
 
 async function apiCall(url, token, opts = {}) {
   const res = await fetch(url, {
@@ -97,153 +107,40 @@ async function verifyTokenAndCollaborator(token) {
   return user;
 }
 
-function completeLogin(token, user) {
-  currentToken = token;
-  currentUser  = user.login;
-  sessionStorage.setItem('omalabs_admin_token', token);
-  sessionStorage.setItem('omalabs_admin_user', user.login);
-  loadEditor();
-}
-
-// ═══════════════════════════════════════════════════════════
-//  DEVICE FLOW (primary)
-// ═══════════════════════════════════════════════════════════
-
-deviceFlowBtn.addEventListener('click', async () => {
-  if (OAUTH_CLIENT_ID === 'REPLACE_WITH_YOUR_CLIENT_ID') {
-    loginError.textContent = 'OAuth Client ID not configured. Use the PAT fallback below, or set up an OAuth App (see admin.js).';
+// ── Login ───────────────────────────────────────────────────
+loginBtn.addEventListener('click', async () => {
+  const token = tokenInput.value.trim();
+  if (!token) {
+    loginError.textContent = 'Please enter a personal access token.';
     return;
   }
   loginError.textContent = '';
-  deviceFlowBtn.disabled = true;
-  deviceFlowBtn.textContent = '⏳ Requesting…';
+  loginBtn.disabled = true;
+  show(loginSpinner);
 
   try {
-    // Step 1: Request device code
-    const dcRes = await fetch('https://github.com/login/device/code', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        client_id: OAUTH_CLIENT_ID,
-        scope: 'repo',
-      }),
-    });
-    if (!dcRes.ok) {
-      const err = await dcRes.json().catch(() => ({}));
-      throw new Error(err.error_description || err.error || 'Device code request failed');
-    }
-    const dc = await dcRes.json();
-
-    // Show code & instructions
-    deviceCode.textContent = dc.user_code;
-    deviceFlowUI.hidden = false;
-    deviceFlowBtn.textContent = '🔁 Waiting for authorization…';
-    deviceFlowError.textContent = '';
-    s(true, deviceSpinner);
-
-    // Step 2: Poll for token
-    const interval = (dc.interval || 5) * 1000;
-    const deadline = Date.now() + (dc.expires_in || 900) * 1000;
-
-    const poll = async () => {
-      if (Date.now() > deadline) {
-        deviceFlowError.textContent = 'Timed out. Please try again.';
-        deviceFlowBtn.disabled = false;
-        deviceFlowBtn.textContent = '🔑 Sign in with GitHub';
-        s(false, deviceSpinner);
-        return;
-      }
-
-      try {
-        const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-          body: new URLSearchParams({
-            client_id: OAUTH_CLIENT_ID,
-            device_code: dc.device_code,
-            grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
-          }),
-        });
-
-        const tr = await tokenRes.json();
-
-        if (tr.error) {
-          if (tr.error === 'authorization_pending') {
-            devicePollTimer = setTimeout(poll, interval);
-            return;
-          }
-          if (tr.error === 'slow_down') {
-            devicePollTimer = setTimeout(poll, interval + 5000);
-            return;
-          }
-          throw new Error(tr.error_description || tr.error);
-        }
-
-        // Got token!
-        s(false, deviceSpinner);
-        deviceFlowBtn.textContent = '✅ Authorized!';
-        const user = await verifyTokenAndCollaborator(tr.access_token);
-        completeLogin(tr.access_token, user);
-      } catch (e) {
-        deviceFlowError.textContent = e.message;
-        deviceFlowBtn.disabled = false;
-        deviceFlowBtn.textContent = '🔑 Sign in with GitHub';
-        s(false, deviceSpinner);
-      }
-    };
-
-    devicePollTimer = setTimeout(poll, interval);
+    const user = await verifyTokenAndCollaborator(token);
+    currentToken = token;
+    currentUser  = user.login;
+    saveToken(token, user.login);
+    await loadEditor();
   } catch (e) {
-    deviceFlowError.textContent = e.message;
-    deviceFlowBtn.disabled = false;
-    deviceFlowBtn.textContent = '🔑 Sign in with GitHub';
-    s(false, deviceSpinner);
+    loginError.textContent = e.message;
+  } finally {
+    loginBtn.disabled = false;
+    hide(loginSpinner);
   }
 });
 
-// ═══════════════════════════════════════════════════════════
-//  PAT FALLBACK
-// ═══════════════════════════════════════════════════════════
-
+// ── Toggle visibility ───────────────────────────────────────
 toggleToken.addEventListener('click', () => {
   const isPw = tokenInput.type === 'password';
   tokenInput.type = isPw ? 'text' : 'password';
   toggleToken.textContent = isPw ? '🙈' : '👁';
 });
 
-patLoginBtn.addEventListener('click', async () => {
-  const token = tokenInput.value.trim();
-  if (!token) {
-    patLoginError.textContent = 'Please enter a personal access token.';
-    return;
-  }
-  patLoginError.textContent = '';
-  patLoginBtn.disabled = true;
-  s(true, patLoginSpinner);
-
-  try {
-    const user = await verifyTokenAndCollaborator(token);
-    completeLogin(token, user);
-  } catch (e) {
-    patLoginError.textContent = e.message;
-  } finally {
-    patLoginBtn.disabled = false;
-    s(false, patLoginSpinner);
-  }
-});
-
-// ═══════════════════════════════════════════════════════════
-//  EDITOR
-// ═══════════════════════════════════════════════════════════
-
+// ── Load editor ─────────────────────────────────────────────
 async function loadEditor() {
-  if (devicePollTimer) clearTimeout(devicePollTimer);
   loginScreen.hidden = true;
   editorScreen.hidden = false;
   userName.textContent = `👤 ${currentUser}`;
@@ -275,7 +172,7 @@ editorForm.addEventListener('submit', async (e) => {
   saveError.textContent = '';
   saveSuccess.textContent = '';
   saveBtn.disabled = true;
-  s(true, saveSpinner);
+  show(saveSpinner);
 
   const newConfig = {
     email:            document.getElementById('emailInput').value.trim(),
@@ -306,12 +203,12 @@ editorForm.addEventListener('submit', async (e) => {
     );
     currentSha = result.content.sha;
     originalConfig = newConfig;
-    saveSuccess.textContent = '✅ Published! Changes will appear on the site within ~60 seconds.';
+    saveSuccess.textContent = '✅ Published! Live in ~60 seconds.';
   } catch (err) {
     saveError.textContent = 'Save failed: ' + err.message;
   } finally {
     saveBtn.disabled = false;
-    s(false, saveSpinner);
+    hide(saveSpinner);
   }
 });
 
@@ -331,36 +228,30 @@ resetBtn.addEventListener('click', () => {
 
 // ── Logout ──────────────────────────────────────────────────
 logoutBtn.addEventListener('click', () => {
-  sessionStorage.removeItem('omalabs_admin_token');
-  sessionStorage.removeItem('omalabs_admin_user');
+  clearSavedToken();
   currentToken = null;
   currentUser = null;
   currentSha = null;
   originalConfig = null;
-  if (devicePollTimer) clearTimeout(devicePollTimer);
   loginScreen.hidden = false;
   editorScreen.hidden = true;
   tokenInput.value = '';
-  patLoginError.textContent = '';
-  deviceFlowError.textContent = '';
-  deviceFlowUI.hidden = true;
-  deviceFlowBtn.disabled = false;
-  deviceFlowBtn.textContent = '🔑 Sign in with GitHub';
+  loginError.textContent = '';
 });
 
 // ── Auto-restore session ────────────────────────────────────
 (async function init() {
-  const savedToken = sessionStorage.getItem('omalabs_admin_token');
-  const savedUser  = sessionStorage.getItem('omalabs_admin_user');
-  if (savedToken && savedUser) {
+  const saved = loadSavedToken();
+  if (saved && saved.token && saved.user) {
     try {
-      await apiCall(`${API_BASE}/user`, savedToken);
-      currentToken = savedToken;
-      currentUser  = savedUser;
+      await apiCall(`${API_BASE}/user`, saved.token);
+      currentToken = saved.token;
+      currentUser  = saved.user;
+      // Refresh storage timestamps
+      saveToken(saved.token, saved.user);
       await loadEditor();
     } catch {
-      sessionStorage.removeItem('omalabs_admin_token');
-      sessionStorage.removeItem('omalabs_admin_user');
+      clearSavedToken();
     }
   }
 })();

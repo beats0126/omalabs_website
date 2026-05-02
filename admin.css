@@ -287,91 +287,27 @@ h1 {
   to { transform: rotate(360deg); }
 }
 
+/* ---------- Checkbox ---------- */
+.admin__checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--clr-muted);
+  cursor: pointer;
+  margin-bottom: 16px;
+  user-select: none;
+}
+
+.admin__checkbox-label input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--clr-cyan);
+  cursor: pointer;
+}
+
 /* ---------- Responsive ---------- */
 @media (max-width: 480px) {
   .admin__card { padding: 28px 20px; }
   .admin__actions { flex-direction: column; }
-}
-
-/* ---------- Device Flow ---------- */
-.admin__device-flow {
-  margin-top: 20px;
-  padding: 20px;
-  background: var(--clr-surface);
-  border: 1px solid var(--clr-border);
-  border-radius: var(--radius-sm);
-}
-
-.admin__device-code-box {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-
-.admin__device-label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--clr-muted);
-  letter-spacing: 0.02em;
-}
-
-.admin__device-code {
-  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-  font-size: 1.4rem;
-  font-weight: 700;
-  letter-spacing: 0.15em;
-  color: var(--clr-cyan);
-  background: rgba(0,212,255,0.08);
-  padding: 6px 16px;
-  border-radius: var(--radius-sm);
-}
-
-.admin__device-steps {
-  font-size: 0.84rem;
-  color: var(--clr-muted);
-  padding-left: 20px;
-  margin-bottom: 0;
-  line-height: 1.8;
-}
-
-.admin__device-steps li { margin-bottom: 2px; }
-
-/* ---------- Divider ---------- */
-.admin__divider {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin: 24px 0;
-  color: var(--clr-muted);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.admin__divider::before,
-.admin__divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--clr-border);
-}
-
-/* ---------- PAT details (collapsible) ---------- */
-.admin__pat-details {
-  margin-top: 0;
-}
-
-.admin__pat-details summary {
-  font-size: 0.82rem;
-  color: var(--clr-muted);
-  cursor: pointer;
-  padding: 4px 0;
-  transition: color var(--transition);
-}
-.admin__pat-details summary:hover { color: var(--clr-cyan); }
-
-.admin__pat-body {
-  margin-top: 16px;
 }

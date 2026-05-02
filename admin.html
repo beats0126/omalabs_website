@@ -22,56 +22,33 @@
       </div>
       <h1>Sign In</h1>
       <p class="admin__desc">
+        Authenticate with a <strong>GitHub Personal Access Token</strong>.
         Only <strong>repository collaborators</strong> are granted access.
-        Your credentials are held in session only and never stored.
       </p>
 
-      <!-- Device flow (primary) -->
-      <button id="deviceFlowBtn" class="admin__btn admin__btn--primary">🔑 Sign in with GitHub</button>
-
-      <div id="deviceFlowUI" class="admin__device-flow" hidden>
-        <div class="admin__device-code-box">
-          <span class="admin__device-label">Your code:</span>
-          <code id="deviceCode" class="admin__device-code"></code>
-        </div>
-        <ol class="admin__device-steps">
-          <li>Open <a href="https://github.com/login/device" target="_blank" rel="noopener noreferrer" class="admin__link">github.com/login/device</a></li>
-          <li>Enter the code above</li>
-          <li>Authorize <strong>OMA Labs Admin</strong></li>
-        </ol>
-        <div id="deviceFlowError" class="admin__error"></div>
-        <div id="deviceFlowSpinner" class="admin__spinner" hidden></div>
+      <div class="admin__token-info">
+        <p>Generate a <strong>classic</strong> token with <code>repo</code> scope:</p>
+        <a href="https://github.com/settings/tokens/new?scopes=repo&description=OMA+Labs+Admin+Panel" target="_blank" rel="noopener noreferrer" class="admin__link">
+          github.com/settings/tokens/new →
+        </a>
       </div>
 
-      <!-- Divider -->
-      <div class="admin__divider"><span>or use a token</span></div>
-
-      <!-- PAT fallback -->
-      <details class="admin__pat-details">
-        <summary>Sign in with a Personal Access Token</summary>
-        <div class="admin__pat-body">
-          <div class="admin__token-info">
-            <p>Generate a classic token with <code>repo</code> scope:</p>
-            <a href="https://github.com/settings/tokens/new?scopes=repo&description=OMA+Labs+Admin+Panel" target="_blank" rel="noopener noreferrer" class="admin__link">
-              github.com/settings/tokens/new
-            </a>
-          </div>
-
-          <div class="admin__field">
-            <label for="tokenInput">Personal Access Token</label>
-            <div class="admin__input-row">
-              <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
-              <button id="toggleToken" class="admin__toggle-vis" type="button" aria-label="Toggle token visibility">👁</button>
-            </div>
-          </div>
-
-          <button id="patLoginBtn" class="admin__btn admin__btn--primary">Sign In with Token</button>
-          <div id="patLoginError" class="admin__error"></div>
-          <div id="patLoginSpinner" class="admin__spinner" hidden></div>
+      <div class="admin__field">
+        <label for="tokenInput">Personal Access Token</label>
+        <div class="admin__input-row">
+          <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
+          <button id="toggleToken" class="admin__toggle-vis" type="button" aria-label="Toggle token visibility">👁</button>
         </div>
-      </details>
+      </div>
 
+      <label class="admin__checkbox-label">
+        <input type="checkbox" id="rememberCheck" />
+        <span>Remember this browser (stores token in localStorage)</span>
+      </label>
+
+      <button id="loginBtn" class="admin__btn admin__btn--primary">Sign In</button>
       <div id="loginError" class="admin__error"></div>
+      <div id="loginSpinner" class="admin__spinner" hidden></div>
     </div>
 
     <!-- EDITOR SCREEN (hidden until authenticated) -->
