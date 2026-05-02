@@ -20,17 +20,17 @@ An admin panel at `/admin.html` lets **GitHub repo collaborators** edit the cont
 
 ### Sign In (two methods)
 
-**🔑 GitHub Device Flow (recommended):**
+**🔑 GitHub OAuth (recommended):**
 1. Click **"Sign in with GitHub"** on the admin page
-2. A code appears — visit [github.com/login/device](https://github.com/login/device) and enter it
-3. Authorize **OMA Labs Admin** — you're in
+2. You'll be redirected to GitHub to authorize the **OMA Labs Admin** app
+3. After authorizing, you're sent back to the admin page — you're in
 
 **🔧 Personal Access Token (fallback):**
 - Expand "Sign in with a Personal Access Token" and paste a classic token with `repo` scope
 
-Both methods verify collaborator status before granting access. Credentials are held in `sessionStorage` only — cleared when the browser tab closes.
+Both methods verify collaborator status before granting access. OAuth tokens are session-only by default. PAT credentials can be remembered for 7 days via `localStorage` if opted in.
 
-### One-Time Setup (required for Device Flow)
+### One-Time Setup (required for OAuth)
 
 Create a GitHub OAuth App at [github.com/settings/developers](https://github.com/settings/developers):
 

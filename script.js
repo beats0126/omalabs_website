@@ -12,15 +12,27 @@
     set('dyn-heading2',     cfg.contactHeading2);
     set('dyn-body',         cfg.contactBody);
 
+    // Safely validate & sanitize a URL to prevent javascript: / data: injection
+    function safeUrl(raw) {
+      if (!raw) return null;
+      let u;
+      try { u = new URL(raw); } catch { u = new URL('https://' + raw); }
+      if (u.protocol !== 'https:' && u.protocol !== 'http:') return null;
+      return u.href;
+    }
+
     const ctaPrimary = document.getElementById('dyn-cta-primary');
     if (ctaPrimary && cfg.email) {
-      ctaPrimary.href = `mailto:${cfg.email}`;
+      // Sanitize mailto: — only allow the email address portion, strip everything after ?
+      const safeEmail = cfg.email.split('?')[0].trim();
+      if (safeEmail) ctaPrimary.href = `mailto:${safeEmail}`;
       if (cfg.primaryCta) ctaPrimary.textContent = cfg.primaryCta;
     }
 
     const ctaSecondary = document.getElementById('dyn-cta-secondary');
     if (ctaSecondary) {
-      if (cfg.secondaryUrl) ctaSecondary.href = cfg.secondaryUrl;
+      const validUrl = safeUrl(cfg.secondaryUrl);
+      if (validUrl) ctaSecondary.href = validUrl;
       if (cfg.secondaryCta) ctaSecondary.textContent = cfg.secondaryCta;
     }
   } catch { /* static fallback — content stays as in HTML */ }

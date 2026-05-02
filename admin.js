@@ -5,6 +5,11 @@
    editing config.json with commits via GitHub API.
    ============================================================ */
 
+// Prevent clickjacking (defense-in-depth with frame-ancestors CSP)
+if (window.self !== window.top) {
+  window.top.location = window.self.location;
+}
+
 // ── Config ──────────────────────────────────────────────────
 const REPO_OWNER = 'beats0126';
 const REPO_NAME  = 'omalabs_website';
@@ -114,9 +119,7 @@ async function verifyTokenAndCollaborator(token) {
     );
   } catch (e) {
     if (e.status === 404) {
-      throw new Error(
-        `User "${user.login}" is not a collaborator on ${REPO_OWNER}/${REPO_NAME}.`
-      );
+      throw new Error('Access denied. You are not authorized to use this admin panel.');
     }
     throw e;
   }
@@ -269,6 +272,20 @@ editorForm.addEventListener('submit', async (e) => {
   saveBtn.disabled = true;
   show(saveSpinner);
 
+  let secUrl = document.getElementById('secondaryUrlInput').value.trim();
+  if (secUrl) {
+    // Parse & validate URL — only allow http/https
+    let parsed;
+    try { parsed = new URL(secUrl); } catch { parsed = new URL('https://' + secUrl); }
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+      saveError.textContent = 'Invalid URL: only http:// and https:// are allowed.';
+      saveBtn.disabled = false;
+      hide(saveSpinner);
+      return;
+    }
+    secUrl = parsed.href;
+  }
+
   const newConfig = {
     email:            document.getElementById('emailInput').value.trim(),
     contactHeading1:  document.getElementById('heading1Input').value.trim(),
@@ -276,12 +293,15 @@ editorForm.addEventListener('submit', async (e) => {
     contactBody:      document.getElementById('bodyInput').value.trim(),
     primaryCta:       document.getElementById('primaryCtaInput').value.trim(),
     secondaryCta:     document.getElementById('secondaryCtaInput').value.trim(),
-    secondaryUrl:     document.getElementById('secondaryUrlInput').value.trim(),
+    secondaryUrl:     secUrl,
   };
 
-  const contentBase64 = btoa(unescape(encodeURIComponent(
-    JSON.stringify(newConfig, null, 2)
-  )));
+  const contentBytes = new TextEncoder().encode(JSON.stringify(newConfig, null, 2));
+  let binary = '';
+  for (let i = 0; i < contentBytes.byteLength; i++) {
+    binary += String.fromCharCode(contentBytes[i]);
+  }
+  const contentBase64 = btoa(binary);
 
   try {
     const result = await apiCall(
@@ -321,8 +341,22 @@ resetBtn.addEventListener('click', () => {
   saveSuccess.textContent = '';
 });
 
+// ── Revoke OAuth token via worker ──────────────────────────
+async function revokeOAuthToken(token) {
+  try {
+    await fetch(`${WORKER_URL}/revoke`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    });
+  } catch {
+    // Best-effort — token will expire on its own eventually
+  }
+}
+
 // ── Logout ──────────────────────────────────────────────────
-logoutBtn.addEventListener('click', () => {
+logoutBtn.addEventListener('click', async () => {
+  const tokenToRevoke = currentToken;
   clearSavedToken();
   currentToken = null;
   currentUser = null;
@@ -332,6 +366,11 @@ logoutBtn.addEventListener('click', () => {
   editorScreen.hidden = true;
   tokenInput.value = '';
   loginError.textContent = '';
+
+  // Revoke OAuth token at GitHub so it can't be reused
+  if (tokenToRevoke && !tokenToRevoke.startsWith('ghp_')) {
+    await revokeOAuthToken(tokenToRevoke);
+  }
 });
 
 // ═══════════════════════════════════════════════════════════
@@ -360,7 +399,7 @@ logoutBtn.addEventListener('click', () => {
   const saved = loadSavedToken();
   if (saved && saved.token && saved.user) {
     try {
-      await apiCall(`${API_BASE}/user`, saved.token);
+      await verifyTokenAndCollaborator(saved.token);
       currentToken = saved.token;
       currentUser  = saved.user;
       saveToken(saved.token, saved.user); // refresh timestamp
