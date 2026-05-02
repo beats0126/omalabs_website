@@ -99,6 +99,9 @@ async function apiCall(url, token, opts = {}) {
     err.status = res.status;
     throw err;
   }
+  if (res.status === 204) {
+    return null;
+  }
   return res.json();
 }
 
