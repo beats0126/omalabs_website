@@ -12,6 +12,7 @@ A single-page static website showcasing services, tech stack, and background. Bu
 - **About / My Journey** — background, education (B.Sc. Hons Game Development, KDU University College Glenmarie), and 7+ years of experience
 - **Services** — Full-Stack Development, IoT & Hardware Design, System Architecture, AI & Automation, Technical Consultancy
 - **Tech Stack** — Software (Flutter, Laravel, PHP, MySQL, JS), Hardware (Arduino, ESP32, Raspberry Pi, PCB), AI & Infra
+- **FAQ** — visible answers about expertise, technologies and project scope
 - **Contact CTA** — links to email and omalabs.cc — **dynamically loaded from `config.json`**
 
 ## Admin Panel
@@ -64,9 +65,22 @@ Then copy the **Client ID** and paste it into `admin.js` replacing `REPLACE_WITH
 
 ## Hosting
 
-Designed to be hosted on **GitHub Pages**. See [GitHub Pages docs](https://docs.github.com/en/pages) for setup instructions. Supports custom domain — point `omalabs.cc` A records to GitHub's IPs and enable HTTPS in repo settings.
+Designed to be hosted on **GitHub Pages**. See [GitHub Pages docs](https://docs.github.com/en/pages) for setup instructions. Supports custom domain — configure `profile.omalabs.cc` for GitHub Pages (matching `CNAME`) and enable HTTPS in repo settings.
 
 ## Contact
 
 - Email: omalabs.cc@gmail.com
 - Website: https://omalabs.cc
+
+## SEO and generative engine optimization (GEO)
+
+The canonical profile URL is `https://profile.omalabs.cc/`. The initial HTML includes a descriptive title, meta description, Open Graph and Twitter previews, and a linked Schema.org graph for the profile page, person, organization, website and services. Visible introductory copy and FAQs help readers and search assistants identify the person and services without executing JavaScript.
+
+- `robots.txt` allows public search and AI crawlers and links to `sitemap.xml`.
+- `sitemap.xml` lists only the canonical public page. Section anchors are not separate pages. The admin page remains excluded through its existing `noindex` meta tag; do not block crawling of it in robots.txt, because crawlers need to read that directive.
+- `llms.txt` provides a concise, linked profile for tools that choose to support it. It is an emerging convention, not a requirement for AI search, and does not guarantee citations or rankings.
+- Keep profile facts, visible service copy, JSON-LD and `llms.txt` consistent when updating expertise. Do not add unverified reviews, clients, locations or credentials to structured data.
+- The contact editor still updates `config.json`. Keep the static contact fallback in `index.html` in sync when contact details change so crawlers without JavaScript see current details. Mutable contact details are not duplicated in JSON-LD or `llms.txt`.
+- If the domain changes, update `CNAME`, canonical/social URLs, JSON-LD IDs, `robots.txt`, `sitemap.xml` and `llms.txt` together.
+
+After deployment, submit `https://profile.omalabs.cc/sitemap.xml` in Google Search Console and Bing Webmaster Tools, inspect the canonical URL, and validate the deployed structured data with Schema.org Validator and Google's Rich Results Test. These account-level submissions are separate from repository changes; search visibility depends on crawling and indexing. Profile and service markup does not promise a rich result.

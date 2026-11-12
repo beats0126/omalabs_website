@@ -1,0 +1,18 @@
+# Li Hang Ping — OMA Labs
+
+> Official professional profile of Li Hang Ping, a full-stack developer and IoT architect at OMA Labs. His work spans software development, connected hardware, system architecture and AI automation.
+
+Li Hang Ping has 7+ years of experience and holds a B.Sc. Hons in Game Development from KDU University College Glenmarie, Shah Alam.
+
+## Profile and services
+
+- [Professional profile](https://profile.omalabs.cc/): Introduction to Li Hang Ping and OMA Labs.
+- [Background](https://profile.omalabs.cc/#about): Education and software and hardware experience.
+- [Services](https://profile.omalabs.cc/#services): Full-stack development with Laravel and Flutter; PCB design and IoT integration with Arduino, ESP32 and Raspberry Pi; system architecture; AI automation and LLM integration; technical consultancy; delivery from concept to maintenance.
+- [Technology stack](https://profile.omalabs.cc/#stack): Software, hardware, AI and infrastructure tools.
+- [Common questions](https://profile.omalabs.cc/#faq): Answers about expertise, technologies and project scope.
+- [Contact](https://profile.omalabs.cc/#contact): Current project enquiry links.
+
+## Related site
+
+- [OMA Labs](https://omalabs.cc): OMA Labs website.
