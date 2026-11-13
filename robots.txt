@@ -1,0 +1,6 @@
+# Public content is available to search and AI crawlers.
+# Leave admin.html crawlable so crawlers can read its noindex directive.
+User-agent: *
+Allow: /
+
+Sitemap: https://profile.omalabs.cc/sitemap.xml
